@@ -12,5 +12,7 @@ public class RacingRating {
         Path end = Paths.get("end.log");
         Path abbreviations = Paths.get("abbreviations.txt");
         String result = racingRatingProcessor.process(start, end, abbreviations);
+
+        System.out.println(result);
     }
 }
