@@ -1,6 +1,7 @@
 package com.foxminded.racingrating.processors;
 
 import java.io.IOException;
+import java.nio.file.FileSystemNotFoundException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalTime;
@@ -12,17 +13,27 @@ import java.util.stream.Stream;
 
 public class RacingRatingProcessor {
     public String process(Path start, Path end, Path abbreviations) {
-        String result;
+        Map<String, LocalTime> startTime = null;
+        Map<String, LocalTime> endTime = null;
+        Map<String, String> names = null;
+        Map<String, String> autos = null;
+        String result = null;
 
-        Map<String, LocalTime> startTime = getStartOrEndTime(start);
-        Map<String, LocalTime> endTime = getStartOrEndTime(end);
+        try {
+            startTime = getStartOrEndTime(start);
+            endTime = getStartOrEndTime(end);
+            names = getNames(abbreviations);
+            autos = getAutos(abbreviations);
+        } catch (FileSystemNotFoundException e) {
+            throw new FileSystemNotFoundException("Sorry ;( No such file");
+        }
 
-        Map<String, String> results = getResults(startTime, endTime);
-        Map<Integer, String> positions = getPositions(startTime, endTime);
-        Map<String, String> names = getNames(abbreviations);
-        Map<String, String> autos = getAutos(abbreviations);
+        if (startTime != null && endTime != null && names != null && autos != null) {
+            Map<String, String> results = getResults(startTime, endTime);
+            Map<Integer, String> positions = getPositions(startTime, endTime);
 
-        result = getRating(names, autos, results, positions);
+            result = getRating(names, autos, results, positions);
+        }
 
         return result;
     }
@@ -132,7 +143,7 @@ public class RacingRatingProcessor {
         AtomicInteger position = new AtomicInteger();
         position.set(1);
         resultInMls.entrySet().stream()
-                .sorted(Map.Entry.<String, Integer>comparingByValue())
+                .sorted(Map.Entry.comparingByValue())
                 .forEach(i -> {
                     positions.put(position.intValue(), i.getKey());
                     position.set(position.intValue() + 1);
@@ -179,11 +190,12 @@ public class RacingRatingProcessor {
     }
 
     private String getMultipleInput(String input, int amount) {
-        String result = "";
+        StringBuilder result = new StringBuilder();
 
         for (int i = 1; i <= amount; i++) {
-            result = result + input;
+            result.append(input);
         }
-        return result;
+
+        return result.toString();
     }
 }
