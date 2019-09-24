@@ -26,6 +26,10 @@ public class RacingRatingProcessor {
             autos = getAutos(abbreviations);
         } catch (FileSystemNotFoundException e) {
             throw new FileSystemNotFoundException("Sorry ;( No such file");
+        } catch (NullPointerException e) {
+            throw new NullPointerException("Sorry ;( File path cant be null");
+        } catch (IOException io) {
+            throw new IllegalArgumentException("Sorry :( Wrong path");
         }
 
         if (startTime != null && endTime != null && names != null && autos != null) {
@@ -38,19 +42,17 @@ public class RacingRatingProcessor {
         return result;
     }
 
-    private Map<String, LocalTime> getStartOrEndTime(Path path) {
+    private Map<String, LocalTime> getStartOrEndTime(Path path) throws IOException {
         Map<String, LocalTime> result = new HashMap<>();
 
-        try (Stream<String> lineStream = Files.lines(path)) {
-            lineStream.forEach(i -> {
-                String key = i.substring(0, 3);
-                String value = i.substring(14);
-                LocalTime time = LocalTime.parse(value);
-                result.put(key, time);
-            });
-        } catch (IOException io) {
-            System.err.println("Some troubles with file :(");
-        }
+        Stream<String> lineStream = Files.lines(path);
+        lineStream.forEach(i -> {
+            String key = i.substring(0, 3);
+            String value = i.substring(14);
+            LocalTime time = LocalTime.parse(value);
+            result.put(key, time);
+        });
+
 
         return result;
     }
@@ -90,40 +92,34 @@ public class RacingRatingProcessor {
         return result;
     }
 
-    private Map<String, String> getNames(Path path) {
+    private Map<String, String> getNames(Path path) throws IOException {
         Map<String, String> result = new HashMap<>();
 
-        try (Stream<String> lineStream = Files.lines(path)) {
-            lineStream.forEach(i -> {
-                String key = i.substring(0, 3);
+        Stream<String> lineStream = Files.lines(path);
+        lineStream.forEach(i -> {
+            String key = i.substring(0, 3);
 
-                String value = i.substring(4);
-                value = value.substring(0, value.indexOf("_"));
+            String value = i.substring(4);
+            value = value.substring(0, value.indexOf("_"));
 
-                result.put(key, value);
-            });
-        } catch (IOException io) {
-            System.err.println("Some troubles with file :(");
-        }
+            result.put(key, value);
+        });
 
         return result;
     }
 
-    private Map<String, String> getAutos(Path path) {
+    private Map<String, String> getAutos(Path path) throws IOException {
         Map<String, String> result = new HashMap<>();
 
-        try (Stream<String> lineStream = Files.lines(path)) {
-            lineStream.forEach(i -> {
-                String key = i.substring(0, 3);
+        Stream<String> lineStream = Files.lines(path);
+        lineStream.forEach(i -> {
+            String key = i.substring(0, 3);
 
-                String value = i.substring(4);
-                value = value.substring(value.indexOf("_") + 1);
+            String value = i.substring(4);
+            value = value.substring(value.indexOf("_") + 1);
 
-                result.put(key, value);
-            });
-        } catch (IOException io) {
-            System.err.println("Some troubles with file :(");
-        }
+            result.put(key, value);
+        });
 
         return result;
     }
