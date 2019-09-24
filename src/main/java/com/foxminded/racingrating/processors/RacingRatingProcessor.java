@@ -7,18 +7,18 @@ import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
 public class RacingRatingProcessor {
     public String process(Path start, Path end, Path abbreviations) {
-        String result = null;
+        String result;
 
         Map<String, LocalTime> startTime = getStartOrEndTime(start);
         Map<String, LocalTime> endTime = getStartOrEndTime(end);
 
         Map<String, String> results = getResults(startTime, endTime);
-        Map<String, Integer> positions = getPositions(startTime, endTime);
+        Map<Integer, String> positions = getPositions(startTime, endTime);
         Map<String, String> names = getNames(abbreviations);
         Map<String, String> autos = getAutos(abbreviations);
 
@@ -117,11 +117,9 @@ public class RacingRatingProcessor {
         return result;
     }
 
-
-    // Переписываем на TreeMap (Сортируем расположение по значениям в resultInMls, а потом просто меняем значение ++)
-    private Map<String, Integer> getPositions(Map<String, LocalTime> startTime, Map<String, LocalTime> endTime) {
+    private Map<Integer, String> getPositions(Map<String, LocalTime> startTime, Map<String, LocalTime> endTime) {
         Map<String, Integer> resultInMls = new HashMap<>();
-        Map<String, Integer> positions = new HashMap<>();
+        Map<Integer, String> positions = new HashMap<>();
 
         endTime.keySet().forEach(i -> {
             LocalTime start = startTime.get(i);
@@ -131,18 +129,61 @@ public class RacingRatingProcessor {
             resultInMls.put(i, (int) milliseconds);
         });
 
+        AtomicInteger position = new AtomicInteger();
+        position.set(1);
+        resultInMls.entrySet().stream()
+                .sorted(Map.Entry.<String, Integer>comparingByValue())
+                .forEach(i -> {
+                    positions.put(position.intValue(), i.getKey());
+                    position.set(position.intValue() + 1);
+                });
+
         return positions;
     }
 
     private String getRating(Map<String, String> names, Map<String, String> autos,
-                             Map<String, String> results, Map<String, Integer> positions){
+                             Map<String, String> results, Map<Integer, String> positions) {
+        String[] ratingArr = new String[19];
+        StringBuilder sb;
+        int columnSize = 33;
 
-        String result = null;
+        for (int i = 0; i < ratingArr.length; i++) {
+            sb = new StringBuilder();
+            sb.append(i + 1)
+                    .append(".")
+                    .append(" ")
+                    .append(names.get(positions.get(i + 1)))
+                    .append(getMultipleInput(" ", columnSize - names.get(positions.get(i + 1)).length()))
+                    .append("|")
+                    .append(autos.get(positions.get(i + 1)))
+                    .append(getMultipleInput(" ", columnSize - autos.get(positions.get(i + 1)).length()))
+                    .append("|")
+                    .append(results.get(positions.get(i + 1)));
 
-        for(int i = 0; i < names.size(); i++){
-
+            ratingArr[i] = sb.toString();
         }
 
+        sb = new StringBuilder();
+        for (int i = 0; i < 15; i++) {
+            sb.append(ratingArr[i])
+                    .append("\n");
+        }
+        sb.append(getMultipleInput("-", 80))
+                .append("\n");
+        for (int i = 15; i < ratingArr.length; i++) {
+            sb.append(ratingArr[i])
+                    .append("\n");
+        }
+
+        return sb.toString().trim();
+    }
+
+    private String getMultipleInput(String input, int amount) {
+        String result = "";
+
+        for (int i = 1; i <= amount; i++) {
+            result = result + input;
+        }
         return result;
     }
 }
