@@ -10,9 +10,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
+import java.util.zip.DataFormatException;
 
 public class RacingRatingProcessor {
-    public String process(Path start, Path end, Path abbreviations) {
+    public String process(Path pathToStartFile, Path pathToEndFile, Path pathToAbbreviationsFile) {
         Map<String, LocalTime> startTime = null;
         Map<String, LocalTime> endTime = null;
         Map<String, String> names = null;
@@ -20,104 +21,92 @@ public class RacingRatingProcessor {
         String result = null;
 
         try {
-            startTime = getStartOrEndTime(start);
-            endTime = getStartOrEndTime(end);
-            names = getNames(abbreviations);
-            autos = getAutos(abbreviations);
+            startTime = getTime(pathToStartFile);
+            endTime = getTime(pathToEndFile);
+            names = getFromAbbreviationsFile(pathToAbbreviationsFile, true);
+            autos = getFromAbbreviationsFile(pathToAbbreviationsFile, false);
         } catch (FileSystemNotFoundException e) {
             throw new FileSystemNotFoundException("Sorry ;( No such file");
         } catch (NullPointerException e) {
-            throw new NullPointerException("Sorry ;( File path cant be null");
+            throw new IllegalArgumentException("Sorry ;( File path cant be null");
         } catch (IOException io) {
-            throw new IllegalArgumentException("Sorry :( Wrong path");
+            try {
+                throw new DataFormatException("Sorry :( Some troubles with file");
+            } catch (DataFormatException e) {
+                System.err.println("Sorry :( Some troubles with file");
+            }
         }
 
-        if (startTime != null && endTime != null && names != null && autos != null) {
+        try {
             Map<String, String> results = getResults(startTime, endTime);
             Map<Integer, String> positions = getPositions(startTime, endTime);
 
-            result = getRating(names, autos, results, positions);
+            String[] rating = getRating(names, autos, results, positions);
+            result = stringArrToString(rating);
+        } catch (NullPointerException npe) {
+            throw new IllegalArgumentException("Sorry ;(");
         }
 
         return result;
     }
 
-    private Map<String, LocalTime> getStartOrEndTime(Path path) throws IOException {
+    private Map<String, LocalTime> getTime(Path path) throws IOException {
         Map<String, LocalTime> result = new HashMap<>();
 
         Stream<String> lineStream = Files.lines(path);
-        lineStream.forEach(i -> {
-            String key = i.substring(0, 3);
-            String value = i.substring(14);
+        lineStream.forEach(line -> {
+            String key = line.substring(0, 3);
+            String value = line.substring(14);
             LocalTime time = LocalTime.parse(value);
             result.put(key, time);
         });
-
 
         return result;
     }
 
     private Map<String, String> getResults(Map<String, LocalTime> startTime, Map<String, LocalTime> endTime) {
         Map<String, String> result = new HashMap<>();
-        endTime.keySet().forEach(i -> {
-            LocalTime start = startTime.get(i);
-            LocalTime end = endTime.get(i);
+        endTime.keySet().forEach(racer -> {
+            LocalTime start = startTime.get(racer);
+            LocalTime end = endTime.get(racer);
             long milliseconds = start.until(end, ChronoUnit.MILLIS);
 
             String millisecondsAsString = String.valueOf(milliseconds);
             String resultMilliseconds = millisecondsAsString.substring(millisecondsAsString.length() - 3);
 
-            String resultSeconds = String.valueOf
-                    (Integer.valueOf(millisecondsAsString.substring(0, millisecondsAsString.length() - 3)) - 60);
+            int seconds = Integer.valueOf(millisecondsAsString.substring(0, millisecondsAsString.length() - 3)) - 60;
+            StringBuilder resultSeconds = new StringBuilder(String.valueOf(seconds));
 
             for (; resultSeconds.length() < 2; ) {
-                resultSeconds = "0" + resultSeconds;
+                resultSeconds.insert(0, "0");
             }
 
-            String resultMinutes = String.valueOf
-                    (Integer.valueOf(millisecondsAsString.substring(0, millisecondsAsString.length() - 3)) / 60);
+            int minutes = Integer.valueOf(millisecondsAsString.substring(0, millisecondsAsString.length() - 3)) / 60;
+            String resultMinutes = String.valueOf(minutes);
 
-            StringBuilder sb = new StringBuilder();
-            sb.append(resultMinutes)
-                    .append(":")
-                    .append(resultSeconds)
-                    .append(".")
-                    .append(resultMilliseconds);
+            String valueResult = resultMinutes + ":" + resultSeconds + "." + resultMilliseconds;
 
-            String valueResult = sb.toString();
-
-            result.put(i, valueResult);
+            result.put(racer, valueResult);
         });
 
         return result;
     }
 
-    private Map<String, String> getNames(Path path) throws IOException {
+    private Map<String, String> getFromAbbreviationsFile(Path path, Boolean names) throws IOException {
         Map<String, String> result = new HashMap<>();
 
         Stream<String> lineStream = Files.lines(path);
-        lineStream.forEach(i -> {
-            String key = i.substring(0, 3);
+        lineStream.forEach(line -> {
+            final String SEPARATOR = "_";
+            final int ABBREVIATION_LENGTH = 3;
+            String key = line.substring(0, ABBREVIATION_LENGTH);
 
-            String value = i.substring(4);
-            value = value.substring(0, value.indexOf("_"));
-
-            result.put(key, value);
-        });
-
-        return result;
-    }
-
-    private Map<String, String> getAutos(Path path) throws IOException {
-        Map<String, String> result = new HashMap<>();
-
-        Stream<String> lineStream = Files.lines(path);
-        lineStream.forEach(i -> {
-            String key = i.substring(0, 3);
-
-            String value = i.substring(4);
-            value = value.substring(value.indexOf("_") + 1);
-
+            String value = line.substring(ABBREVIATION_LENGTH + 1);
+            if (names) {
+                value = value.substring(0, value.indexOf(SEPARATOR));
+            } else {
+                value = value.substring(value.indexOf(SEPARATOR) + 1);
+            }
             result.put(key, value);
         });
 
@@ -128,61 +117,61 @@ public class RacingRatingProcessor {
         Map<String, Integer> resultInMls = new HashMap<>();
         Map<Integer, String> positions = new HashMap<>();
 
-        endTime.keySet().forEach(i -> {
-            LocalTime start = startTime.get(i);
-            LocalTime end = endTime.get(i);
+        endTime.keySet().forEach(racer -> {
+            LocalTime start = startTime.get(racer);
+            LocalTime end = endTime.get(racer);
             long milliseconds = start.until(end, ChronoUnit.MILLIS);
 
-            resultInMls.put(i, (int) milliseconds);
+            resultInMls.put(racer, (int) milliseconds);
         });
 
         AtomicInteger position = new AtomicInteger();
         position.set(1);
         resultInMls.entrySet().stream()
                 .sorted(Map.Entry.comparingByValue())
-                .forEach(i -> {
-                    positions.put(position.intValue(), i.getKey());
+                .forEach(racer -> {
+                    positions.put(position.intValue(), racer.getKey());
                     position.set(position.intValue() + 1);
                 });
 
         return positions;
     }
 
-    private String getRating(Map<String, String> names, Map<String, String> autos,
-                             Map<String, String> results, Map<Integer, String> positions) {
-        String[] ratingArr = new String[19];
-        StringBuilder sb;
+    private String[] getRating(Map<String, String> names, Map<String, String> autos,
+                               Map<String, String> results, Map<Integer, String> positions) {
+        String[] rating = new String[19];
         int columnSize = 33;
 
-        for (int i = 0; i < ratingArr.length; i++) {
-            sb = new StringBuilder();
-            sb.append(i + 1)
-                    .append(".")
-                    .append(" ")
-                    .append(names.get(positions.get(i + 1)))
-                    .append(getMultipleInput(" ", columnSize - names.get(positions.get(i + 1)).length()))
-                    .append("|")
-                    .append(autos.get(positions.get(i + 1)))
-                    .append(getMultipleInput(" ", columnSize - autos.get(positions.get(i + 1)).length()))
-                    .append("|")
-                    .append(results.get(positions.get(i + 1)));
+        for (int i = 0; i < rating.length; i++) {
+            int position = i + 1;
 
-            ratingArr[i] = sb.toString();
+            String racerInRating = position + "." + " " + names.get(positions.get(position)) +
+                    getMultipleInput(" ", columnSize - names.get(positions.get(position)).length()) +
+                    "|" + autos.get(positions.get(position)) +
+                    getMultipleInput(" ", columnSize - autos.get(positions.get(position)).length()) +
+                    "|" + results.get(positions.get(position));
+            rating[i] = racerInRating;
         }
 
-        sb = new StringBuilder();
-        for (int i = 0; i < 15; i++) {
-            sb.append(ratingArr[i])
+        return rating;
+    }
+
+    private String stringArrToString(String[] rating) {
+        StringBuilder resultBuilder = new StringBuilder();
+        final int BEST_RACERS_QUANTITY = 15;
+
+        for (int i = 0; i < BEST_RACERS_QUANTITY; i++) {
+            resultBuilder.append(rating[i])
                     .append("\n");
         }
-        sb.append(getMultipleInput("-", 80))
+        resultBuilder.append(getMultipleInput("-", 80))
                 .append("\n");
-        for (int i = 15; i < ratingArr.length; i++) {
-            sb.append(ratingArr[i])
+        for (int i = BEST_RACERS_QUANTITY; i < rating.length; i++) {
+            resultBuilder.append(rating[i])
                     .append("\n");
         }
 
-        return sb.toString().trim();
+        return resultBuilder.toString().trim();
     }
 
     private String getMultipleInput(String input, int amount) {

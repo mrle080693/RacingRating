@@ -13,25 +13,25 @@ class TestRacingRatingProcessor {
     private RacingRatingProcessor racingRatingProcessor = new RacingRatingProcessor();
 
     @Test
-    void processMustReturnNullPointerExceptionIfFilePathIsNull() {
+    void processMustReturnIllegalArgumentExceptionIfFilePathIsNull() {
         Path start = Paths.get("start.log");
         Path end = Paths.get("end.log");
         Path abbreviations = Paths.get("abbreviations.txt");
 
         // Only first is null
-        Assertions.assertThrows(NullPointerException.class, () -> {
+        Assertions.assertThrows(IllegalArgumentException.class, () -> {
             racingRatingProcessor.process(null, end, abbreviations);
         });
         // Only second is null
-        Assertions.assertThrows(NullPointerException.class, () -> {
+        Assertions.assertThrows(IllegalArgumentException.class, () -> {
             racingRatingProcessor.process(start, null, abbreviations);
         });
         // Only third is null
-        Assertions.assertThrows(NullPointerException.class, () -> {
+        Assertions.assertThrows(IllegalArgumentException.class, () -> {
             racingRatingProcessor.process(start, end, null);
         });
         // All
-        Assertions.assertThrows(NullPointerException.class, () -> {
+        Assertions.assertThrows(IllegalArgumentException.class, () -> {
             racingRatingProcessor.process(null, null, null);
         });
     }

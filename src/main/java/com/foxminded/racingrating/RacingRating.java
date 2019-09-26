@@ -9,12 +9,12 @@ import java.nio.file.Paths;
 public class RacingRating {
     public static void main(String[] args) {
         try {
-            Path start = Paths.get("start.log");
-            Path end = Paths.get("end.log");
-            Path abbreviations = Paths.get("abbreviations.txt");
+            Path pathToStartFile = Paths.get("start.log");
+            Path pathToEndFile = Paths.get("end.log");
+            Path pathToAbbreviationsFile = Paths.get("abbreviations.txt");
 
             RacingRatingProcessor racingRatingProcessor = new RacingRatingProcessor();
-            String result = racingRatingProcessor.process(start, end, abbreviations);
+            String result = racingRatingProcessor.process(pathToStartFile, pathToEndFile, pathToAbbreviationsFile);
 
             System.out.println(result);
         } catch (FileSystemNotFoundException e) {
