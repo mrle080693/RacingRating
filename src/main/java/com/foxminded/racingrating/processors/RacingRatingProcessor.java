@@ -1,60 +1,31 @@
 package com.foxminded.racingrating.processors;
 
-import java.io.IOException;
-import java.nio.file.FileSystemNotFoundException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Stream;
-import java.util.zip.DataFormatException;
 
 public class RacingRatingProcessor {
-    public String process(Path pathToStartFile, Path pathToEndFile, Path pathToAbbreviationsFile) {
-        Map<String, LocalTime> startTime = null;
-        Map<String, LocalTime> endTime = null;
-        Map<String, String> names = null;
-        Map<String, String> autos = null;
-        String result = null;
+    public String process(List<String> startTimeList, List<String> endTimeList, List<String> abbreviationsList) {
+        Map<String, LocalTime> startTimeMap = getTime(startTimeList);
+        Map<String, LocalTime> endTimeMap = getTime(endTimeList);
+        Map<String, String> names = getFromAbbreviationsList(abbreviationsList, true);
+        Map<String, String> autos = getFromAbbreviationsList(abbreviationsList, false);
 
-        try {
-            startTime = getTime(pathToStartFile);
-            endTime = getTime(pathToEndFile);
-            names = getFromAbbreviationsFile(pathToAbbreviationsFile, true);
-            autos = getFromAbbreviationsFile(pathToAbbreviationsFile, false);
-        } catch (FileSystemNotFoundException e) {
-            throw new FileSystemNotFoundException("Sorry ;( No such file");
-        } catch (NullPointerException e) {
-            throw new IllegalArgumentException("Sorry ;( File path cant be null");
-        } catch (IOException io) {
-            try {
-                throw new DataFormatException("Sorry :( Some troubles with file");
-            } catch (DataFormatException e) {
-                System.err.println("Sorry :( Some troubles with file");
-            }
-        }
+        Map<String, String> results = getResults(startTimeMap, endTimeMap);
+        Map<Integer, String> positions = getPositions(startTimeMap, endTimeMap);
 
-        try {
-            Map<String, String> results = getResults(startTime, endTime);
-            Map<Integer, String> positions = getPositions(startTime, endTime);
+        String[] rating = getRating(names, autos, results, positions);
 
-            String[] rating = getRating(names, autos, results, positions);
-            result = stringArrToString(rating);
-        } catch (NullPointerException npe) {
-            throw new IllegalArgumentException("Sorry ;(");
-        }
-
-        return result;
+        return stringArrToString(rating);
     }
 
-    private Map<String, LocalTime> getTime(Path path) throws IOException {
+    private Map<String, LocalTime> getTime(List<String> list) {
         Map<String, LocalTime> result = new HashMap<>();
 
-        Stream<String> lineStream = Files.lines(path);
-        lineStream.forEach(line -> {
+        list.forEach(line -> {
             String key = line.substring(0, 3);
             String value = line.substring(14);
             LocalTime time = LocalTime.parse(value);
@@ -64,11 +35,31 @@ public class RacingRatingProcessor {
         return result;
     }
 
-    private Map<String, String> getResults(Map<String, LocalTime> startTime, Map<String, LocalTime> endTime) {
+    private Map<String, String> getFromAbbreviationsList(List<String> list, Boolean names) {
         Map<String, String> result = new HashMap<>();
-        endTime.keySet().forEach(racer -> {
-            LocalTime start = startTime.get(racer);
-            LocalTime end = endTime.get(racer);
+
+        list.forEach(line -> {
+            final String SEPARATOR = "_";
+            final int ABBREVIATION_LENGTH = 3;
+            String key = line.substring(0, ABBREVIATION_LENGTH);
+
+            String value = line.substring(ABBREVIATION_LENGTH + 1);
+            if (names) {
+                value = value.substring(0, value.indexOf(SEPARATOR));
+            } else {
+                value = value.substring(value.indexOf(SEPARATOR) + 1);
+            }
+            result.put(key, value);
+        });
+
+        return result;
+    }
+
+    private Map<String, String> getResults(Map<String, LocalTime> startTimeMap, Map<String, LocalTime> endTimeMap) {
+        Map<String, String> result = new HashMap<>();
+        endTimeMap.keySet().forEach(racer -> {
+            LocalTime start = startTimeMap.get(racer);
+            LocalTime end = endTimeMap.get(racer);
             long milliseconds = start.until(end, ChronoUnit.MILLIS);
 
             String millisecondsAsString = String.valueOf(milliseconds);
@@ -92,34 +83,13 @@ public class RacingRatingProcessor {
         return result;
     }
 
-    private Map<String, String> getFromAbbreviationsFile(Path path, Boolean names) throws IOException {
-        Map<String, String> result = new HashMap<>();
-
-        Stream<String> lineStream = Files.lines(path);
-        lineStream.forEach(line -> {
-            final String SEPARATOR = "_";
-            final int ABBREVIATION_LENGTH = 3;
-            String key = line.substring(0, ABBREVIATION_LENGTH);
-
-            String value = line.substring(ABBREVIATION_LENGTH + 1);
-            if (names) {
-                value = value.substring(0, value.indexOf(SEPARATOR));
-            } else {
-                value = value.substring(value.indexOf(SEPARATOR) + 1);
-            }
-            result.put(key, value);
-        });
-
-        return result;
-    }
-
-    private Map<Integer, String> getPositions(Map<String, LocalTime> startTime, Map<String, LocalTime> endTime) {
+    private Map<Integer, String> getPositions(Map<String, LocalTime> startTimeMap, Map<String, LocalTime> endTimeMap) {
         Map<String, Integer> resultInMls = new HashMap<>();
         Map<Integer, String> positions = new HashMap<>();
 
-        endTime.keySet().forEach(racer -> {
-            LocalTime start = startTime.get(racer);
-            LocalTime end = endTime.get(racer);
+        endTimeMap.keySet().forEach(racer -> {
+            LocalTime start = startTimeMap.get(racer);
+            LocalTime end = endTimeMap.get(racer);
             long milliseconds = start.until(end, ChronoUnit.MILLIS);
 
             resultInMls.put(racer, (int) milliseconds);
