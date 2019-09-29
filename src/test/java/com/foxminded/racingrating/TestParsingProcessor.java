@@ -24,12 +24,14 @@ class TestParsingProcessor {
     @Test
     void parseMustReturnFileIsEmptyExceptionIfFileIsEmpty() {
         Path path = Paths.get("src\\test\\resources\\empty.txt");
+
         Assertions.assertThrows(FileIsEmptyException.class, () -> parsingProcessor.parse(path));
     }
 
     @Test
     void parseMustReturnWrongPathExceptionIfFilePathIsWrong() {
         Path path = Paths.get("wrong_way.txt");
+
         Assertions.assertThrows(WrongPathException.class, () -> parsingProcessor.parse(path));
     }
 

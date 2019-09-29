@@ -1,7 +1,7 @@
 package com.foxminded.racingrating.exceptions;
 
 public class WrongPathException extends RuntimeException {
-    public WrongPathException(){
+    public WrongPathException() {
         getMessage();
     }
 

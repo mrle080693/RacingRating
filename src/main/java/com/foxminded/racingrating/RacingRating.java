@@ -23,6 +23,7 @@ public class RacingRating {
 
             RacingRatingProcessor racingRatingProcessor = new RacingRatingProcessor();
             String result = racingRatingProcessor.process(startTimeList, endTimeList, abbreviationsList);
+
             System.out.println(result);
 
         } catch (IllegalArgumentException | FileIsEmptyException | WrongPathException e) {

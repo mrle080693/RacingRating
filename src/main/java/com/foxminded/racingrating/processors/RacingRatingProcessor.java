@@ -9,17 +9,27 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class RacingRatingProcessor {
     public String process(List<String> startTimeList, List<String> endTimeList, List<String> abbreviationsList) {
-        Map<String, LocalTime> startTimeMap = getTime(startTimeList);
-        Map<String, LocalTime> endTimeMap = getTime(endTimeList);
-        Map<String, String> names = getFromAbbreviationsList(abbreviationsList, true);
-        Map<String, String> autos = getFromAbbreviationsList(abbreviationsList, false);
+        String[] rating;
+        String result;
 
-        Map<String, String> results = getResults(startTimeMap, endTimeMap);
-        Map<Integer, String> positions = getPositions(startTimeMap, endTimeMap);
+        try {
+            Map<String, LocalTime> startTimeMap = getTime(startTimeList);
+            Map<String, LocalTime> endTimeMap = getTime(endTimeList);
+            Map<String, String> names = getFromAbbreviationsList(abbreviationsList, true);
+            Map<String, String> autos = getFromAbbreviationsList(abbreviationsList, false);
 
-        String[] rating = getRating(names, autos, results, positions);
+            Map<String, String> results = getResults(startTimeMap, endTimeMap);
+            Map<Integer, String> positions = getPositions(startTimeMap, endTimeMap);
 
-        return stringArrToString(rating);
+            rating = getRating(names, autos, results, positions);
+            result = stringArrToString(rating);
+        } catch (NullPointerException npe) {
+            throw new IllegalArgumentException("Input list must not be:" + "\n"
+                    + "1) null " + "\n"
+                    + "2) empty");
+        }
+
+        return result;
     }
 
     private Map<String, LocalTime> getTime(List<String> list) {
