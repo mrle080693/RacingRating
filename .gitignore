@@ -2,5 +2,6 @@
 out/
 target/
 *.iml
-*.txt
-*.log
+start.log
+end.log
+abbreviations.txt
