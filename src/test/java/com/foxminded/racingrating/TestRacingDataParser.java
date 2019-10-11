@@ -5,8 +5,8 @@ import com.foxminded.racingrating.parsers.RacingDataParser;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalTime;
@@ -62,42 +62,48 @@ class TestRacingDataParser {
 
     @Test
     void parseTimeMustReturnDataFormatExceptionIfFileIsEmpty() {
-        Path path = Paths.get("src\\test\\resources\\test_empty.txt");
+        Path path = Paths.get("src" + File.separator + "test" + File.separator + "resources" +
+                File.separator + "test_empty.txt");
 
         Assertions.assertThrows(DataFormatException.class, () -> racingDataParser.parseTime(path));
     }
 
     @Test
     void parseNamesMustReturnDataFormatExceptionIfFileIsEmpty() {
-        Path path = Paths.get("src\\test\\resources\\test_empty.txt");
+        Path path = Paths.get("src" + File.separator + "test" + File.separator + "resources" +
+                File.separator + "test_empty.txt");
 
         Assertions.assertThrows(DataFormatException.class, () -> racingDataParser.parseNames(path));
     }
 
     @Test
     void parseAutosMustReturnDataFormatExceptionIfFileIsEmpty() {
-        Path path = Paths.get("src\\test\\resources\\test_empty.txt");
+        Path path = Paths.get("src" + File.separator + "test" + File.separator + "resources" +
+                File.separator + "test_empty.txt");
 
         Assertions.assertThrows(DataFormatException.class, () -> racingDataParser.parseAutos(path));
     }
 
     @Test
     void parseTimeMustReturnDataFormatExceptionIfFileDataFormatIsIncorrect() {
-        Path path = Paths.get("src\\test\\resources\\test_wrong_data.txt");
+        Path path = Paths.get("src" + File.separator + "test" + File.separator + "resources" +
+                File.separator + "test_wrong_data.txt");
 
         Assertions.assertThrows(DataFormatException.class, () -> racingDataParser.parseTime(path));
     }
 
     @Test
     void parseNamesMustReturnDataFormatExceptionIfFileDataFormatIsIncorrect() {
-        Path path = Paths.get("src\\test\\resources\\test_wrong_data.txt");
+        Path path = Paths.get("src" + File.separator + "test" + File.separator + "resources" +
+                File.separator + "test_wrong_data.txt");
 
         Assertions.assertThrows(DataFormatException.class, () -> racingDataParser.parseNames(path));
     }
 
     @Test
     void parseAutosMustReturnDataFormatExceptionIfFileDataFormatIsIncorrect() {
-        Path path = Paths.get("src\\test\\resources\\test_wrong_data.txt");
+        Path path = Paths.get("src" + File.separator + "test" + File.separator + "resources" +
+                File.separator + "test_wrong_data.txt");
 
         Assertions.assertThrows(DataFormatException.class, () -> racingDataParser.parseAutos(path));
     }
@@ -107,7 +113,8 @@ class TestRacingDataParser {
         Map<String, LocalTime> expected = new HashMap<>();
         expected.put("MES", LocalTime.parse("12:05:58.778"));
 
-        Path path = Paths.get("src\\test\\resources\\test_correct_time.txt");
+        Path path = Paths.get("src" + File.separator + "test" + File.separator + "resources" +
+                File.separator + "test_correct_time.txt");
         Map<String, LocalTime> actual = racingDataParser.parseTime(path);
 
         assertEquals(expected, actual);
@@ -119,7 +126,8 @@ class TestRacingDataParser {
         Map<String, String> expected = new HashMap<>();
         expected.put("DRR", "Daniel Ricciardo");
 
-        Path path = Paths.get("src\\test\\resources\\test_correct_abbr.txt");
+        Path path = Paths.get("src" + File.separator + "test" + File.separator + "resources" +
+                File.separator + "test_correct_abbr.txt");
         Map<String, String> actual = racingDataParser.parseNames(path);
 
         assertEquals(expected, actual);
@@ -130,7 +138,8 @@ class TestRacingDataParser {
         Map<String, String> expected = new HashMap<>();
         expected.put("DRR", "RED BULL RACING TAG HEUER");
 
-        Path path = Paths.get("src\\test\\resources\\test_correct_abbr.txt");
+        Path path = Paths.get("src" + File.separator + "test" + File.separator + "resources" +
+                File.separator + "test_correct_abbr.txt");
         Map<String, String> actual = racingDataParser.parseAutos(path);
 
         assertEquals(expected, actual);

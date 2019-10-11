@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -17,9 +18,12 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class TestRacingRatingProcessor {
-    private static Path TEST_START_LOG_FILE_PATH = Paths.get("src\\test\\resources\\test_start.log");
-    private static Path TEST_END_LOG_FILE_PATH = Paths.get("src\\test\\resources\\test_end.log");
-    private static Path TEST_ABBREVIATIONS_TXT_FILE_PATH = Paths.get("src\\test\\resources\\test_abbreviations.txt");
+    private final static Path TEST_START_LOG_FILE_PATH = Paths.get("src" + File.separator + "test" + File.separator +
+            "resources" + File.separator + "test_start.log");
+    private final static Path TEST_END_LOG_FILE_PATH = Paths.get("src" + File.separator + "test" + File.separator +
+            "resources" + File.separator + "test_end.log");
+    private final static Path TEST_ABBREVIATIONS_TXT_FILE_PATH = Paths.get("src" + File.separator + "test" +
+            File.separator + "resources" + File.separator + "test_abbreviations.txt");
 
     private static RacingDataParser racingDataParser = new RacingDataParser();
     private static Map<String, LocalTime> startTimeMap;

@@ -1,6 +1,9 @@
 package com.foxminded.racingrating.exceptions;
 
 public class DataFormatException extends RuntimeException {
+    public DataFormatException() {
+    }
+
     public DataFormatException(String input) {
         printMessage(input);
     }
