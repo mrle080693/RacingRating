@@ -1,9 +1,10 @@
 package com.foxminded.racingrating;
 
 import com.foxminded.racingrating.exceptions.DataFormatException;
-import com.foxminded.racingrating.processors.RacingDataParser;
+import com.foxminded.racingrating.parsers.RacingDataParser;
 import com.foxminded.racingrating.processors.RacingRatingProcessor;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -16,26 +17,29 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class TestRacingRatingProcessor {
-    private Path PATH_TO_START_FILE = Paths.get("src\\test\\resources\\start_file.log");
-    private Path PATH_TO_END_FILE = Paths.get("src\\test\\resources\\end_file.log");
-    private Path PATH_TO_ABBREVIATIONS_FILE = Paths.get("src\\test\\resources\\abbreviations_file.txt");
+    private static Path TEST_START_LOG_FILE_PATH = Paths.get("src\\test\\resources\\test_start.log");
+    private static Path TEST_END_LOG_FILE_PATH = Paths.get("src\\test\\resources\\test_end.log");
+    private static Path TEST_ABBREVIATIONS_TXT_FILE_PATH = Paths.get("src\\test\\resources\\test_abbreviations.txt");
 
-    private RacingDataParser racingDataParser = new RacingDataParser();
-    private Map<String, LocalTime> startTimeMap;
-    private Map<String, LocalTime> endTimeMap;
-    private Map<String, String> names;
-    private Map<String, String> autos;
+    private static RacingDataParser racingDataParser = new RacingDataParser();
+    private static Map<String, LocalTime> startTimeMap;
+    private static Map<String, LocalTime> endTimeMap;
+    private static Map<String, LocalTime> mapForTestingTime = new HashMap<>();
+    private static Map<String, String> names;
+    private static Map<String, String> autos;
+    private Map<String, String> mapForTestingData = new HashMap<>();
 
-    private LocalTime timeForTest = LocalTime.parse("12:04:02.979");
+    private static LocalTime timeForTest = LocalTime.parse("12:04:02.979");
 
     private RacingRatingProcessor racingRatingProcessor = new RacingRatingProcessor();
 
-    {
+    @BeforeAll
+    static void initializer() {
         try {
-            startTimeMap = racingDataParser.getTime(PATH_TO_START_FILE);
-            endTimeMap = racingDataParser.getTime(PATH_TO_END_FILE);
-            names = racingDataParser.getNames(PATH_TO_ABBREVIATIONS_FILE);
-            autos = racingDataParser.getAutos(PATH_TO_ABBREVIATIONS_FILE);
+            startTimeMap = racingDataParser.parseTime(TEST_START_LOG_FILE_PATH);
+            endTimeMap = racingDataParser.parseTime(TEST_END_LOG_FILE_PATH);
+            names = racingDataParser.parseNames(TEST_ABBREVIATIONS_TXT_FILE_PATH);
+            autos = racingDataParser.parseAutos(TEST_ABBREVIATIONS_TXT_FILE_PATH);
         } catch (IOException io) {
             System.out.println(io.getMessage());
         }
@@ -43,110 +47,100 @@ class TestRacingRatingProcessor {
 
     @Test
     void processMustReturnIllegalArgumentExceptionIfStartTimeMapIsNull() {
-        Assertions.assertThrows(IllegalArgumentException.class, () -> racingRatingProcessor
-                .process(null, endTimeMap, names, autos));
+        Assertions.assertThrows(IllegalArgumentException.class, () -> racingRatingProcessor.process(null,
+                endTimeMap, names, autos));
     }
 
     @Test
     void processMustReturnIllegalArgumentExceptionIfEndTimeMapIsNull() {
-        Assertions.assertThrows(IllegalArgumentException.class, () -> racingRatingProcessor
-                .process(startTimeMap, null, names, autos));
+        Assertions.assertThrows(IllegalArgumentException.class, () -> racingRatingProcessor.process(startTimeMap,
+                null, names, autos));
     }
 
     @Test
     void processMustReturnIllegalArgumentExceptionIfNamesIsNull() {
-        Assertions.assertThrows(IllegalArgumentException.class, () -> racingRatingProcessor
-                .process(startTimeMap, endTimeMap, null, autos));
+        Assertions.assertThrows(IllegalArgumentException.class, () -> racingRatingProcessor.process(startTimeMap,
+                endTimeMap, null, autos));
     }
 
     @Test
     void processMustReturnIllegalArgumentExceptionIfAutosIsNull() {
-        Assertions.assertThrows(IllegalArgumentException.class, () -> racingRatingProcessor
-                .process(startTimeMap, endTimeMap, names, null));
+        Assertions.assertThrows(IllegalArgumentException.class, () -> racingRatingProcessor.process(startTimeMap,
+                endTimeMap, names, null));
     }
 
     @Test
-    void processMustReturnDataFormatExceptionIfStartTimeMapIsEmpty() throws IOException {
-        startTimeMap = new HashMap<>();
-        Assertions.assertThrows(DataFormatException.class, () -> racingRatingProcessor
-                .process(startTimeMap, endTimeMap, names, autos));
-        startTimeMap = racingDataParser.getTime(PATH_TO_START_FILE);
+    void processMustReturnDataFormatExceptionIfStartTimeMapIsEmpty() {
+        mapForTestingTime.clear();
+        Assertions.assertThrows(DataFormatException.class, () -> racingRatingProcessor.process(mapForTestingTime,
+                endTimeMap, names, autos));
     }
 
     @Test
-    void processMustReturnDataFormatExceptionIfEndTimeMapIsEmpty() throws IOException {
-        endTimeMap = new HashMap<>();
-        Assertions.assertThrows(DataFormatException.class, () -> racingRatingProcessor
-                .process(startTimeMap, endTimeMap, names, autos));
-        endTimeMap = racingDataParser.getTime(PATH_TO_END_FILE);
+    void processMustReturnDataFormatExceptionIfEndTimeMapIsEmpty() {
+        mapForTestingTime.clear();
+        Assertions.assertThrows(DataFormatException.class, () -> racingRatingProcessor.process(startTimeMap,
+                mapForTestingTime, names, autos));
     }
 
     @Test
-    void processMustReturnDataFormatExceptionIfNamesIsEmpty() throws IOException {
-        names = new HashMap<>();
-        Assertions.assertThrows(DataFormatException.class, () -> racingRatingProcessor
-                .process(startTimeMap, endTimeMap, names, autos));
-        names = racingDataParser.getNames(PATH_TO_ABBREVIATIONS_FILE);
+    void processMustReturnDataFormatExceptionIfNamesIsEmpty() {
+        mapForTestingData.clear();
+        Assertions.assertThrows(DataFormatException.class, () -> racingRatingProcessor.process(startTimeMap,
+                endTimeMap, mapForTestingData, autos));
     }
 
     @Test
-    void processMustReturnDataFormatExceptionIfAutosIsEmpty() throws IOException {
-        autos = new HashMap<>();
-        Assertions.assertThrows(DataFormatException.class, () -> racingRatingProcessor
-                .process(startTimeMap, endTimeMap, names, autos));
-        autos = racingDataParser.getAutos(PATH_TO_ABBREVIATIONS_FILE);
+    void processMustReturnDataFormatExceptionIfAutosIsEmpty() {
+        mapForTestingData.clear();
+        Assertions.assertThrows(DataFormatException.class, () -> racingRatingProcessor.process(startTimeMap,
+                endTimeMap, names, mapForTestingData));
     }
 
     @Test
-    void processMustReturnDataFormatExceptionIfStartTimeMapIncludesIncorrectData() throws IOException {
-        startTimeMap = new HashMap<>();
-        startTimeMap.put("Wrong Key", timeForTest);
+    void processMustReturnDataFormatExceptionIfStartTimeMapIncludesIncorrectData() {
+        mapForTestingData.clear();
+        mapForTestingTime.put("Wrong Key", timeForTest);
 
-        Assertions.assertThrows(DataFormatException.class, () -> racingRatingProcessor
-                .process(startTimeMap, endTimeMap, names, autos));
-
-        startTimeMap = racingDataParser.getTime(PATH_TO_START_FILE);
+        Assertions.assertThrows(DataFormatException.class, () -> racingRatingProcessor.process(mapForTestingTime,
+                endTimeMap, names, autos));
     }
 
     @Test
-    void processMustReturnDataFormatExceptionIfEndTimeMapIncludesIncorrectData() throws IOException {
-        endTimeMap = new HashMap<>();
-        endTimeMap.put("Wrong Key", timeForTest);
+    void processMustReturnDataFormatExceptionIfEndTimeMapIncludesIncorrectData() {
+        mapForTestingTime.clear();
+        mapForTestingTime.put("Wrong Key", timeForTest);
 
-        Assertions.assertThrows(DataFormatException.class, () -> racingRatingProcessor
-                .process(startTimeMap, endTimeMap, names, autos));
-
-        endTimeMap = racingDataParser.getTime(PATH_TO_END_FILE);
+        Assertions.assertThrows(DataFormatException.class, () -> racingRatingProcessor.process(startTimeMap,
+                mapForTestingTime, names, autos));
     }
 
     @Test
-    void processMustReturnDataFormatExceptionIfNamesIncludesIncorrectData() throws IOException {
-        names = new HashMap<>();
-        names.put("Wrong Key", "Value");
+    void processMustReturnDataFormatExceptionIfNamesIncludesIncorrectData() {
+        mapForTestingData.clear();
+        mapForTestingData.put("Wrong Key", "Value");
 
-        Assertions.assertThrows(DataFormatException.class, () -> racingRatingProcessor
-                .process(startTimeMap, endTimeMap, names, autos));
+        Assertions.assertThrows(DataFormatException.class, () -> racingRatingProcessor.process(startTimeMap,
+                endTimeMap, mapForTestingData, autos));
 
-        names.put("Key", "");
-        Assertions.assertThrows(DataFormatException.class, () -> racingRatingProcessor
-                .process(startTimeMap, endTimeMap, names, autos));
-
-        names = racingDataParser.getNames(PATH_TO_ABBREVIATIONS_FILE);
+        mapForTestingData.clear();
+        mapForTestingData.put("Key", "");
+        Assertions.assertThrows(DataFormatException.class, () -> racingRatingProcessor.process(startTimeMap,
+                endTimeMap, mapForTestingData, autos));
     }
 
     @Test
-    void processMustReturnDataFormatExceptionIfAutosIncludesIncorrectData() throws IOException {
-        autos = new HashMap<>();
-        autos.put("Wrong Key", "Value");
+    void processMustReturnDataFormatExceptionIfAutosIncludesIncorrectData() {
+        mapForTestingData.clear();
+        mapForTestingData.put("Wrong Key", "Value");
 
-        Assertions.assertThrows(DataFormatException.class, () -> racingRatingProcessor
-                .process(startTimeMap, endTimeMap, names, autos));
+        Assertions.assertThrows(DataFormatException.class, () -> racingRatingProcessor.process(startTimeMap,
+                endTimeMap, names, mapForTestingData));
 
-        autos.put("Key", "");
-        Assertions.assertThrows(DataFormatException.class, () -> racingRatingProcessor
-                .process(startTimeMap, endTimeMap, names, autos));
-
-        autos = racingDataParser.getNames(PATH_TO_ABBREVIATIONS_FILE);
+        mapForTestingData.clear();
+        mapForTestingData.put("Key", "");
+        Assertions.assertThrows(DataFormatException.class, () -> racingRatingProcessor.process(startTimeMap,
+                endTimeMap, names, mapForTestingData));
     }
 
     @Test

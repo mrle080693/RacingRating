@@ -1,7 +1,7 @@
 package com.foxminded.racingrating;
 
 import com.foxminded.racingrating.exceptions.DataFormatException;
-import com.foxminded.racingrating.processors.RacingDataParser;
+import com.foxminded.racingrating.parsers.RacingDataParser;
 import com.foxminded.racingrating.processors.RacingRatingProcessor;
 
 import java.io.IOException;
@@ -11,17 +11,18 @@ import java.time.LocalTime;
 import java.util.Map;
 
 public class RacingRating {
-    public static void main(String[] args) {
-        final Path PATH_TO_START_FILE = Paths.get("start.log");
-        final Path PATH_TO_END_FILE = Paths.get("end.log");
-        final Path PATH_TO_ABBREVIATIONS_FILE = Paths.get("abbreviations.txt");
+    // СПРОСИ!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    public final static Path START_LOG_FILE_PATH = Paths.get("start.log");
+    public static final Path END_LOG_FILE_PATH = Paths.get("end.log");
+    public static final Path ABBREVIATIONS_TXT_FILE_PATH = Paths.get("abbreviations.txt");
 
+    public static void main(String[] args) {
         try {
             RacingDataParser racingDataParser = new RacingDataParser();
-            Map<String, LocalTime> startTimeMap = racingDataParser.getTime(PATH_TO_START_FILE);
-            Map<String, LocalTime> endTimeMap = racingDataParser.getTime(PATH_TO_END_FILE);
-            Map<String, String> names = racingDataParser.getNames(PATH_TO_ABBREVIATIONS_FILE);
-            Map<String, String> autos = racingDataParser.getAutos(PATH_TO_ABBREVIATIONS_FILE);
+            Map<String, LocalTime> startTimeMap = racingDataParser.parseTime(START_LOG_FILE_PATH);
+            Map<String, LocalTime> endTimeMap = racingDataParser.parseTime(END_LOG_FILE_PATH);
+            Map<String, String> names = racingDataParser.parseNames(ABBREVIATIONS_TXT_FILE_PATH);
+            Map<String, String> autos = racingDataParser.parseAutos(ABBREVIATIONS_TXT_FILE_PATH);
 
             RacingRatingProcessor racingRatingProcessor = new RacingRatingProcessor();
             String result = racingRatingProcessor.process(startTimeMap, endTimeMap, names, autos);
