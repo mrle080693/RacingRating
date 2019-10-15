@@ -18,94 +18,72 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class TestRacingDataParser {
     private RacingDataParser racingDataParser = new RacingDataParser();
 
+    private final Path WRONG_PATH = Paths.get("Wrong Way");
+    private final Path TEST_EMPTY_FILE_PATH = Paths.get("src" + File.separator + "test" + File.separator + "resources" +
+            File.separator + "test_empty.txt");
+    private final Path TEST_WRONG_DATA_PATH = Paths.get("src" + File.separator + "test" + File.separator + "resources" +
+            File.separator + "test_wrong_data.txt");
+    private final Path TEST_CORRECT_ABBREVIATIONS_PATH = Paths.get("src" + File.separator + "test" + File.separator + "resources" +
+            File.separator + "test_correct_abbr.txt");
+
     @Test
     void parseTimeMustReturnIllegalArgumentExceptionIfFilePathIsNull() {
-        Path path = null;
-
-        Assertions.assertThrows(IllegalArgumentException.class, () -> racingDataParser.parseTime(path));
+        Assertions.assertThrows(IllegalArgumentException.class, () -> racingDataParser.parseTime(null));
     }
 
     @Test
     void parseNamesMustReturnIllegalArgumentExceptionIfFilePathIsNull() {
-        Path path = null;
-
-        Assertions.assertThrows(IllegalArgumentException.class, () -> racingDataParser.parseNames(path));
+        Assertions.assertThrows(IllegalArgumentException.class, () -> racingDataParser.parseNames(null));
     }
 
     @Test
     void parseAutosMustReturnIllegalArgumentExceptionIfFilePathIsNull() {
-        Path path = null;
-
-        Assertions.assertThrows(IllegalArgumentException.class, () -> racingDataParser.parseAutos(path));
+        Assertions.assertThrows(IllegalArgumentException.class, () -> racingDataParser.parseAutos(null));
     }
 
     @Test
     void parseTimeMustReturnIOExceptionIfFilePathIsWrong() {
-        Path path = Paths.get("Wrong Way");
-
-        Assertions.assertThrows(IOException.class, () -> racingDataParser.parseTime(path));
+        Assertions.assertThrows(IOException.class, () -> racingDataParser.parseTime(WRONG_PATH));
     }
 
     @Test
     void parseNamesMustReturnIOExceptionIfFilePathIsWrong() {
-        Path path = Paths.get("Wrong Way");
-
-        Assertions.assertThrows(IOException.class, () -> racingDataParser.parseNames(path));
+        Assertions.assertThrows(IOException.class, () -> racingDataParser.parseNames(WRONG_PATH));
     }
 
     @Test
     void parseAutosMustReturnIOExceptionIfFilePathIsWrong() {
-        Path path = Paths.get("Wrong Way");
-
-        Assertions.assertThrows(IOException.class, () -> racingDataParser.parseAutos(path));
+        Assertions.assertThrows(IOException.class, () -> racingDataParser.parseAutos(WRONG_PATH));
     }
 
     @Test
     void parseTimeMustReturnDataFormatExceptionIfFileIsEmpty() {
-        Path path = Paths.get("src" + File.separator + "test" + File.separator + "resources" +
-                File.separator + "test_empty.txt");
-
-        Assertions.assertThrows(DataFormatException.class, () -> racingDataParser.parseTime(path));
+        Assertions.assertThrows(DataFormatException.class, () -> racingDataParser.parseTime(TEST_EMPTY_FILE_PATH));
     }
 
     @Test
     void parseNamesMustReturnDataFormatExceptionIfFileIsEmpty() {
-        Path path = Paths.get("src" + File.separator + "test" + File.separator + "resources" +
-                File.separator + "test_empty.txt");
-
-        Assertions.assertThrows(DataFormatException.class, () -> racingDataParser.parseNames(path));
+        Assertions.assertThrows(DataFormatException.class, () -> racingDataParser.parseNames(TEST_EMPTY_FILE_PATH));
     }
 
     @Test
     void parseAutosMustReturnDataFormatExceptionIfFileIsEmpty() {
-        Path path = Paths.get("src" + File.separator + "test" + File.separator + "resources" +
-                File.separator + "test_empty.txt");
-
-        Assertions.assertThrows(DataFormatException.class, () -> racingDataParser.parseAutos(path));
+        Assertions.assertThrows(DataFormatException.class, () -> racingDataParser.parseAutos(TEST_EMPTY_FILE_PATH));
     }
 
     @Test
     void parseTimeMustReturnDataFormatExceptionIfFileDataFormatIsIncorrect() {
-        Path path = Paths.get("src" + File.separator + "test" + File.separator + "resources" +
-                File.separator + "test_wrong_data.txt");
-
-        Assertions.assertThrows(DataFormatException.class, () -> racingDataParser.parseTime(path));
+        Assertions.assertThrows(DataFormatException.class, () -> racingDataParser.parseTime(TEST_WRONG_DATA_PATH));
     }
 
     @Test
     void parseNamesMustReturnDataFormatExceptionIfFileDataFormatIsIncorrect() {
-        Path path = Paths.get("src" + File.separator + "test" + File.separator + "resources" +
-                File.separator + "test_wrong_data.txt");
-
-        Assertions.assertThrows(DataFormatException.class, () -> racingDataParser.parseNames(path));
+        Assertions.assertThrows(DataFormatException.class, () -> racingDataParser.parseNames(TEST_WRONG_DATA_PATH));
     }
 
     @Test
     void parseAutosMustReturnDataFormatExceptionIfFileDataFormatIsIncorrect() {
-        Path path = Paths.get("src" + File.separator + "test" + File.separator + "resources" +
-                File.separator + "test_wrong_data.txt");
-
-        Assertions.assertThrows(DataFormatException.class, () -> racingDataParser.parseAutos(path));
+        Assertions.assertThrows(DataFormatException.class, () -> racingDataParser.parseAutos(TEST_WRONG_DATA_PATH));
     }
 
     @Test
@@ -126,9 +104,7 @@ class TestRacingDataParser {
         Map<String, String> expected = new HashMap<>();
         expected.put("DRR", "Daniel Ricciardo");
 
-        Path path = Paths.get("src" + File.separator + "test" + File.separator + "resources" +
-                File.separator + "test_correct_abbr.txt");
-        Map<String, String> actual = racingDataParser.parseNames(path);
+        Map<String, String> actual = racingDataParser.parseNames(TEST_CORRECT_ABBREVIATIONS_PATH);
 
         assertEquals(expected, actual);
     }
@@ -138,9 +114,7 @@ class TestRacingDataParser {
         Map<String, String> expected = new HashMap<>();
         expected.put("DRR", "RED BULL RACING TAG HEUER");
 
-        Path path = Paths.get("src" + File.separator + "test" + File.separator + "resources" +
-                File.separator + "test_correct_abbr.txt");
-        Map<String, String> actual = racingDataParser.parseAutos(path);
+        Map<String, String> actual = racingDataParser.parseAutos(TEST_CORRECT_ABBREVIATIONS_PATH);
 
         assertEquals(expected, actual);
     }

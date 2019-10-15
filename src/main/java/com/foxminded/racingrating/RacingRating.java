@@ -11,10 +11,10 @@ import java.time.LocalTime;
 import java.util.Map;
 
 public class RacingRating {
-    // СПРОСИ!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    public final static Path START_LOG_FILE_PATH = Paths.get("start.log");
-    public static final Path END_LOG_FILE_PATH = Paths.get("end.log");
-    public static final Path ABBREVIATIONS_TXT_FILE_PATH = Paths.get("abbreviations.txt");
+
+    private static final Path START_LOG_FILE_PATH = Paths.get("start.log");
+    private static final Path END_LOG_FILE_PATH = Paths.get("end.log");
+    private static final Path ABBREVIATIONS_TXT_FILE_PATH = Paths.get("abbreviations.txt");
 
     public static void main(String[] args) {
         try {

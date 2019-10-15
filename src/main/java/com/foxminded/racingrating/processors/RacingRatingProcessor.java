@@ -9,10 +9,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class RacingRatingProcessor {
-    public static final String PATTERN_FOR_ALL_MAPS_KEYS = ".{3}";
-    public static final int RACERS_AMOUNT = 19;
-    public static final int COLUMN_SIZE = 33;
-    public static final int BEST_RACERS_QUANTITY = 15;
+    private final String KEY_PATTERN = ".{3}";
 
     public String process(Map<String, LocalTime> startTimeMap, Map<String, LocalTime> endTimeMap,
                           Map<String, String> names, Map<String, String> autos) {
@@ -78,6 +75,7 @@ public class RacingRatingProcessor {
 
     private String[] getRating(Map<String, String> names, Map<String, String> autos,
                                Map<String, String> results, Map<Integer, String> positions) {
+        int RACERS_AMOUNT = 19;
         String[] rating = new String[RACERS_AMOUNT];
 
         for (int i = 0; i < rating.length; i++) {
@@ -85,6 +83,7 @@ public class RacingRatingProcessor {
 
             // Variables for rating
             String racersName = names.get(positions.get(position));
+            int COLUMN_SIZE = 33;
             String separatorsAfterName = leftPad("", " ", COLUMN_SIZE - racersName.length());
             String auto = autos.get(positions.get(position));
             String separatorsAfterAuto = leftPad("", " ",
@@ -102,6 +101,7 @@ public class RacingRatingProcessor {
     private String stringArrToString(String[] rating) {
         StringBuilder result = new StringBuilder();
 
+        int BEST_RACERS_QUANTITY = 15;
         for (int i = 0; i < BEST_RACERS_QUANTITY; i++) {
             result.append(rating[i]).append("\n");
         }
@@ -136,18 +136,18 @@ public class RacingRatingProcessor {
             throw new DataFormatException("Map must not be empty");
         }
 
-        checkTimeMap(startTimeData);
-        checkTimeMap(endTimeData);
-        validateXXX(names);
-        validateXXX(autos);
+        validateTimeData(startTimeData);
+        validateTimeData(endTimeData);
+        validate(names);
+        validate(autos);
     }
 
-    private void checkTimeMap(Map<String, LocalTime> map) {
+    private void validateTimeData(Map<String, LocalTime> map) {
         AtomicInteger index = new AtomicInteger();
         index.set(0);
 
         for (String key : map.keySet()) {
-            boolean keyIsCorrect = key.matches(PATTERN_FOR_ALL_MAPS_KEYS);
+            boolean keyIsCorrect = key.matches(KEY_PATTERN);
 
             if (!keyIsCorrect) {
                 throw new DataFormatException("Incorrect map key in index " + index);
@@ -157,12 +157,12 @@ public class RacingRatingProcessor {
         }
     }
 
-    private void validateXXX(Map<String, String> map) {
+    private void validate(Map<String, String> map) {
         AtomicInteger index = new AtomicInteger();
         index.set(0);
 
         for (String key : map.keySet()) {
-            checkString(key, PATTERN_FOR_ALL_MAPS_KEYS, "Incorrect map key in index  " + index);
+            checkString(key, KEY_PATTERN, "Incorrect map key in index  " + index);
 
             index.set(index.get() + 1);
         }
