@@ -81,7 +81,6 @@ public class RacingRatingProcessor {
         for (int i = 0; i < rating.length; i++) {
             int position = i + 1;
 
-            // Variables for rating
             String racersName = names.get(positions.get(position));
             int COLUMN_SIZE = 33;
             String separatorsAfterName = leftPad("", " ", COLUMN_SIZE - racersName.length());
@@ -158,24 +157,24 @@ public class RacingRatingProcessor {
     }
 
     private void validate(Map<String, String> map) {
-        AtomicInteger index = new AtomicInteger();
-        index.set(0);
+        int index = 0;
 
         for (String key : map.keySet()) {
             checkString(key, KEY_PATTERN, "Incorrect map key in index  " + index);
 
-            index.set(index.get() + 1);
+            index++;
         }
 
-        index.set(0);
+        index = 0;
 
-        map.forEach((key, value) -> {
+        for (String value : map.values()) {
             final String PATTERN_FOR_MAPS_VALUES = ".+";
 
             checkString(value, PATTERN_FOR_MAPS_VALUES, "Incorrect map value in index  " + index);
 
-            index.set(index.get() + 1);
-        });
+            index++;
+        }
+
     }
 
     private void checkString(String input, String pattern, String failMessage) {

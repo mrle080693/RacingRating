@@ -8,15 +8,9 @@ import java.nio.file.Path;
 import java.time.LocalTime;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
 public class RacingDataParser {
-    public static final int ABBREVIATION_LENGTH = 3;
-    public static final String SEPARATOR = "_";
-    public static final String PATTERN_TIME = ".{3}\\d{4}[-]\\d{2}[-]\\d{2}[_]\\d{2}[:]\\d{2}[:]\\d{2}[.]\\d{3}";
-    public static final String PATTERN_NOT_TIME = ".{3}[_].+[_].+";
-
     public Map<String, LocalTime> parseTime(Path path) throws IOException {
         Map<String, LocalTime> result = new HashMap<>();
 
@@ -41,23 +35,31 @@ public class RacingDataParser {
             throw new IllegalArgumentException("Sorry:( File path is null");
         }
 
-        AtomicInteger lineNumber = new AtomicInteger();
-        lineNumber.set(0);
+        int lineNumber = 0;
         Map<String, String> result = new HashMap<>();
         Stream<String> lineStream = Files.lines(path);
+        Object[] lines = lineStream.toArray();
 
-        lineStream.forEach(line -> {
-            lineNumber.getAndIncrement();
+        for (Object obj : lines) {
+            String line = obj.toString();
+            lineNumber++;
 
+            int ABBREVIATION_LENGTH = 3;
+            String SEPARATOR = "_";
             if (isTime) {
-                checkString(line, PATTERN_TIME, "Incorrect data in line number " + lineNumber.get());
+                String CHECK_TIME_FILES_DATA_PATTERN = ".{3}\\d{4}[-]\\d{2}[-]\\d{2}[_]\\d{2}[:]\\d{2}[:]\\d{2}[.]\\d{3}";
+                checkString(line, CHECK_TIME_FILES_DATA_PATTERN, "Incorrect data in line number "
+                        + lineNumber);
 
                 String key = line.substring(0, ABBREVIATION_LENGTH);
                 String value = line.substring(line.indexOf(SEPARATOR) + 1);
 
                 result.put(key, value);
+
             } else {
-                checkString(line, PATTERN_NOT_TIME, "Incorrect data in line number " + lineNumber.get());
+                String CHECK_ABBREVIATION_FILE_DATA_PATTERN = ".{3}[_].+[_].+";
+                checkString(line, CHECK_ABBREVIATION_FILE_DATA_PATTERN, "Incorrect data in line number "
+                        + lineNumber);
 
                 String key = line.substring(0, ABBREVIATION_LENGTH);
                 String[] splitLine = line.split(SEPARATOR);
@@ -65,13 +67,14 @@ public class RacingDataParser {
 
                 if (isNames) {
                     value = splitLine[1];
+
                 } else {
                     value = splitLine[2];
                 }
 
                 result.put(key, value);
             }
-        });
+        }
 
         if (result.isEmpty()) {
             throw new DataFormatException("Sorry ;( File is empty");
@@ -81,9 +84,9 @@ public class RacingDataParser {
     }
 
     private void checkString(String input, String pattern, String failMessage) {
-        boolean IsCorrect = input.matches(pattern);
+        boolean isCorrect = input.matches(pattern);
 
-        if (!IsCorrect) {
+        if (!isCorrect) {
             throw new DataFormatException(failMessage);
         }
     }

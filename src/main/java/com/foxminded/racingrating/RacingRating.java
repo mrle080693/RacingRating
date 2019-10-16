@@ -19,13 +19,13 @@ public class RacingRating {
     public static void main(String[] args) {
         try {
             RacingDataParser racingDataParser = new RacingDataParser();
-            Map<String, LocalTime> startTimeMap = racingDataParser.parseTime(START_LOG_FILE_PATH);
-            Map<String, LocalTime> endTimeMap = racingDataParser.parseTime(END_LOG_FILE_PATH);
+            Map<String, LocalTime> startTimeData = racingDataParser.parseTime(START_LOG_FILE_PATH);
+            Map<String, LocalTime> endTimeData = racingDataParser.parseTime(END_LOG_FILE_PATH);
             Map<String, String> names = racingDataParser.parseNames(ABBREVIATIONS_TXT_FILE_PATH);
             Map<String, String> autos = racingDataParser.parseAutos(ABBREVIATIONS_TXT_FILE_PATH);
 
             RacingRatingProcessor racingRatingProcessor = new RacingRatingProcessor();
-            String result = racingRatingProcessor.process(startTimeMap, endTimeMap, names, autos);
+            String result = racingRatingProcessor.process(startTimeData, endTimeData, names, autos);
 
             System.out.println(result);
         } catch (IllegalArgumentException | DataFormatException e) {
